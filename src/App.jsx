@@ -308,8 +308,8 @@ const Footer = () => (
       <a href="mailto:support@aamoghtech.org" className="footer-link">
         <i className="fa-solid fa-envelope" aria-hidden="true" /> support@aamoghtech.org
       </a>
-      <a href="tel:+91741615129" className="footer-link">
-        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 7416 15129
+      <a href="tel:+917411615129" className="footer-link">
+        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 74116 15129
       </a>
     </div>
     <span>© {new Date().getFullYear()} Aamogh Tech Solutions. All rights reserved.</span>
