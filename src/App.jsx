@@ -92,12 +92,12 @@ const services = [
 ];
 
 const capabilities = [
-  { icon: '🔐', title: 'Secure & Scalable', desc: 'Built with security and performance in mind for production workloads' },
-  { icon: '📱', title: 'Mobile-First', desc: 'Responsive and intuitive experiences across all devices' },
-  { icon: '⚡', title: 'Modern Stack', desc: 'React, Node, and cloud-native tools for fast delivery' },
-  { icon: '🎯', title: 'User-Centered', desc: 'Research-driven design that solves real problems' },
-  { icon: '🔗', title: 'Integrations', desc: 'APIs and third-party integrations where you need them' },
-  { icon: '📊', title: 'Analytics Ready', desc: 'Insights and reporting built into your product' },
+  { title: 'Secure & Scalable', desc: 'Built with security and performance in mind for production workloads', bgImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80' },
+  { title: 'Mobile-First', desc: 'Responsive and intuitive experiences across all devices', bgImage: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80' },
+  { title: 'Modern Stack', desc: 'React, Node, and cloud-native tools for fast delivery', bgImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80' },
+  { title: 'User-Centered', desc: 'Research-driven design that solves real problems', bgImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80' },
+  { title: 'Integrations', desc: 'APIs and third-party integrations where you need them', bgImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80' },
+  { title: 'Analytics Ready', desc: 'Insights and reporting built into your product', bgImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80' },
 ];
 
 // --- Components ---
@@ -123,16 +123,16 @@ const Navbar = () => (
 const Hero = () => (
   <div className="hero" id="home">
     <div className="hero-badge">✨ Building the future with technology</div>
-    <h1>We build intuitive,<br /><em>impactful platforms</em></h1>
-    <p>Aamogh Tech Solutions specializes in creating scalable, user-centered software that solves real-world problems. Explore our flagship projects below.</p>
+    <h1><span className="hero-line1">Engineering Scalable</span><br /><span className="hero-accent">Solutions</span></h1>
+    <p>Specializing in intuitive design and scalable architecture, we deliver software that makes a measurable difference.</p>
     <div className="hero-stats">
       <div className="stat">
-        <div className="stat-num">{projects.length}<span>+</span></div>
-        <div className="stat-label">Projects</div>
+        <div className="stat-num">3<span>+</span></div>
+        <div className="stat-label">Flagship Projects</div>
       </div>
       <div className="stat">
-        <div className="stat-num">1<span>×</span></div>
-        <div className="stat-label">Unified Vision</div>
+        <div className="stat-num">1</div>
+        <div className="stat-label">Shared Vision</div>
       </div>
     </div>
     <a href="#projects" className="btn">View Our Work →</a>
@@ -150,7 +150,7 @@ const ProjectsSection = () => {
       <p className="section-desc reveal reveal-delay-1">From EdTech and healthcare to career platforms — click a tab to view the project and its features.</p>
 
       <div className="browser-tabs" role="tablist" aria-label="Projects">
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           <button
             key={project.id}
             type="button"
@@ -279,9 +279,17 @@ const HighlightStrip = () => (
       <div className="capabilities-grid">
         {capabilities.map((cap, i) => (
           <div key={i} className="cap-item">
-            <div className="cap-icon">{cap.icon}</div>
-            <div className="cap-title">{cap.title}</div>
-            <div className="cap-desc">{cap.desc}</div>
+            <div
+              className="cap-item-bg"
+              style={{ backgroundImage: `url(${cap.bgImage})` }}
+              aria-hidden="true"
+            />
+            <div className="cap-item-overlay" aria-hidden="true" />
+            <div className="cap-item-hover-overlay" aria-hidden="true" />
+            <div className="cap-item-content">
+              <div className="cap-title">{cap.title}</div>
+              <div className="cap-desc">{cap.desc}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -292,29 +300,154 @@ const HighlightStrip = () => (
 const CtaSection = () => (
   <div className="cta-section">
     <div className="cta-glow" aria-hidden="true" />
-    <h2>Ready to build something great?</h2>
-    <p>Let's talk about your next project — from idea to launch.</p>
+    <h2>Let's Bring Your Vision to Life.</h2>
+    <p>Collaborate with our experts to launch impactful solutions.</p>
     <div className="cta-buttons">
-      <a href="mailto:support@aamoghtech.org" className="btn-primary">Get in Touch →</a>
-      <a href="#projects" className="btn-outline">View Projects</a>
+      <a href="#contact" className="btn-primary">Let's Connect →</a>
+      <a href="#projects" className="btn-outline">Discover Our Solutions</a>
     </div>
   </div>
 );
 
+const ContactSection = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState(null); // 'sending' | 'success' | 'error'
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const next = {};
+    if (!name.trim()) next.name = 'Please enter your name';
+    if (!email.trim()) next.email = 'Please enter your email';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Please enter a valid email';
+    if (!message.trim()) next.message = 'Please enter a message';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setStatus(null);
+    if (!validate()) return;
+
+    setStatus('sending');
+    const subject = encodeURIComponent(`Contact from ${name.trim()}`);
+    const body = encodeURIComponent(
+      `${message.trim()}\n\n---\nFrom: ${name.trim()} <${email.trim()}>`
+    );
+    const mailtoUrl = `mailto:support@aamoghtech.org?subject=${subject}&body=${body}`;
+
+    try {
+      window.location.href = mailtoUrl;
+      setName('');
+      setEmail('');
+      setMessage('');
+      setErrors({});
+      setStatus('success');
+    } catch (err) {
+      setStatus('error');
+    }
+  };
+
+  return (
+    <section id="contact" className="contact-section">
+      <div className="contact-inner">
+        <div className="contact-header">
+          <div className="section-label">Get in touch</div>
+          <h2 className="section-title">Contact us</h2>
+          <p className="section-desc">Reach out via the form below or use the contact details.</p>
+        </div>
+        <div className="contact-content">
+          <form className="contact-form" onSubmit={handleSubmit} noValidate>
+            <div className="form-row">
+              <label htmlFor="contact-name" className="form-label">Name</label>
+              <input
+                id="contact-name"
+                type="text"
+                className={`form-input ${errors.name ? 'form-input--error' : ''}`}
+                placeholder="Your name"
+                aria-label="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? 'contact-name-error' : undefined}
+              />
+              {errors.name && (
+                <span id="contact-name-error" className="form-error" role="alert">{errors.name}</span>
+              )}
+            </div>
+            <div className="form-row">
+              <label htmlFor="contact-email" className="form-label">Email</label>
+              <input
+                id="contact-email"
+                type="email"
+                className={`form-input ${errors.email ? 'form-input--error' : ''}`}
+                placeholder="your@email.com"
+                aria-label="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'contact-email-error' : undefined}
+              />
+              {errors.email && (
+                <span id="contact-email-error" className="form-error" role="alert">{errors.email}</span>
+              )}
+            </div>
+            <div className="form-row">
+              <label htmlFor="contact-message" className="form-label">Message</label>
+              <textarea
+                id="contact-message"
+                className={`form-input form-textarea ${errors.message ? 'form-input--error' : ''}`}
+                placeholder="Your message..."
+                rows={4}
+                aria-label="Message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                aria-invalid={!!errors.message}
+                aria-describedby={errors.message ? 'contact-message-error' : undefined}
+              />
+              {errors.message && (
+                <span id="contact-message-error" className="form-error" role="alert">{errors.message}</span>
+              )}
+            </div>
+            {status === 'success' && (
+              <p className="form-status form-status--success" role="status">
+                Your email client will open with the message. Send it from there to reach us.
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="form-status form-status--error" role="alert">
+                Something went wrong. You can email us directly at support@aamoghtech.org.
+              </p>
+            )}
+            <button
+              type="submit"
+              className="contact-submit"
+              disabled={status === 'sending'}
+            >
+              {status === 'sending' ? 'Opening email…' : 'Send message'}
+            </button>
+          </form>
+          <div className="contact-details">
+            <a href="mailto:support@aamoghtech.org" className="contact-link">
+              <i className="fa-solid fa-envelope contact-icon" aria-hidden="true" />
+              <span>support@aamoghtech.org</span>
+            </a>
+            <a href="tel:+917411615129" className="contact-link">
+              <i className="fa-solid fa-phone contact-icon" aria-hidden="true" />
+              <span>+91 74116 15129</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const Footer = () => (
-  <footer id="contact">
+  <footer className="site-footer">
     <span className="footer-brand">Aamogh <span>Tech Solutions</span></span>
-    <div className="footer-contact">
-      <a href="mailto:support@aamoghtech.org" className="footer-link">
-        <i className="fa-solid fa-envelope" aria-hidden="true" /> support@aamoghtech.org
-      </a>
-      <a href="tel:+917411615129" className="footer-link">
-        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 74116 15129
-      </a>
-      <a href="tel:+919845899224" className="footer-link">
-        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 98458 99224
-      </a>
-    </div>
     <span>© {new Date().getFullYear()} Aamogh Tech Solutions. All rights reserved.</span>
   </footer>
 );
@@ -343,6 +476,7 @@ function App() {
       <ServicesSection />
       <HighlightStrip />
       <CtaSection />
+      <ContactSection />
       <Footer />
     </div>
   );
