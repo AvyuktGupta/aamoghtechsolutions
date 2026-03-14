@@ -311,6 +311,9 @@ const Footer = () => (
       <a href="tel:+917411615129" className="footer-link">
         <i className="fa-solid fa-phone" aria-hidden="true" /> +91 74116 15129
       </a>
+      <a href="tel:+919845899224" className="footer-link">
+        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 98458 99224
+      </a>
     </div>
     <span>© {new Date().getFullYear()} Aamogh Tech Solutions. All rights reserved.</span>
   </footer>
