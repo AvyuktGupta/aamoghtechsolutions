@@ -295,7 +295,7 @@ const CtaSection = () => (
     <h2>Ready to build something great?</h2>
     <p>Let's talk about your next project — from idea to launch.</p>
     <div className="cta-buttons">
-      <a href="mailto:aamoghtech@gmail.com" className="btn-primary">Get in Touch →</a>
+      <a href="mailto:support@aamoghtech.org" className="btn-primary">Get in Touch →</a>
       <a href="#projects" className="btn-outline">View Projects</a>
     </div>
   </div>
@@ -305,11 +305,11 @@ const Footer = () => (
   <footer id="contact">
     <span className="footer-brand">Aamogh <span>Tech Solutions</span></span>
     <div className="footer-contact">
-      <a href="mailto:aamoghtech@gmail.com" className="footer-link">
-        <i className="fa-solid fa-envelope" aria-hidden="true" /> aamoghtech@gmail.com
+      <a href="mailto:support@aamoghtech.org" className="footer-link">
+        <i className="fa-solid fa-envelope" aria-hidden="true" /> support@aamoghtech.org
       </a>
-      <a href="tel:+919876543210" className="footer-link">
-        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 98765 43210
+      <a href="tel:+91741615129" className="footer-link">
+        <i className="fa-solid fa-phone" aria-hidden="true" /> +91 7416 15129
       </a>
     </div>
     <span>© {new Date().getFullYear()} Aamogh Tech Solutions. All rights reserved.</span>
