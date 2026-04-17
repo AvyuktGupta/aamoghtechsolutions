@@ -32,7 +32,6 @@ aamoghtechsolutions/
 │   └── contact.js        # Vercel serverless function (production)
 ├── src/                  # React app (Vite)
 ├── vite.config.js        # Vite config — dev proxy for /api → :3001
-├── .env.example          # Frontend env template (usually not needed)
 ├── server/               # Local Express API (dev only)
 │   ├── src/index.js
 │   ├── package.json

@@ -330,10 +330,7 @@ const ContactSection = () => {
 
     setStatus('sending');
     try {
-      const base = (import.meta?.env?.VITE_CONTACT_API_BASE || '').replace(/\/+$/, '');
-      const url = `${base}/api/contact`;
-
-      const res = await fetch(url, {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
