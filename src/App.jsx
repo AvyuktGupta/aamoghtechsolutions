@@ -9,7 +9,7 @@ const projects = [
     description: 'A comprehensive vehicle tracking application designed for schools. It connects parents, drivers, and school administration to ensure the safety of students traveling between home and campus.',
     icon: 'fa-bus',
     tags: ['GPS Tracking', 'EdTech'],
-    link: 'https://routica.co.in',
+    link: 'https://routica.aamoghtech.org/',
     iconClass: 'icon-teal',
     features: [
       'Real-time bus location and route tracking',
@@ -114,9 +114,6 @@ const Navbar = () => (
       <a href="#services">Services</a>
       <a href="#contact">Contact</a>
     </div>
-    <a href="#contact" className="nav-cta">
-      Get in Touch →
-    </a>
   </nav>
 );
 
@@ -326,20 +323,28 @@ const ContactSection = () => {
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus(null);
     if (!validate()) return;
 
     setStatus('sending');
-    const subject = encodeURIComponent(`Contact from ${name.trim()}`);
-    const body = encodeURIComponent(
-      `${message.trim()}\n\n---\nFrom: ${name.trim()} <${email.trim()}>`
-    );
-    const mailtoUrl = `mailto:support@aamoghtech.org?subject=${subject}&body=${body}`;
-
     try {
-      window.location.href = mailtoUrl;
+      const base = (import.meta?.env?.VITE_CONTACT_API_BASE || '').replace(/\/+$/, '');
+      const url = `${base}/api/contact`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          message: message.trim(),
+        }),
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+
       setName('');
       setEmail('');
       setMessage('');
@@ -413,7 +418,7 @@ const ContactSection = () => {
             </div>
             {status === 'success' && (
               <p className="form-status form-status--success" role="status">
-                Your email client will open with the message. Send it from there to reach us.
+                Thanks — we received your message and will get back to you soon.
               </p>
             )}
             {status === 'error' && (
@@ -426,7 +431,7 @@ const ContactSection = () => {
               className="contact-submit"
               disabled={status === 'sending'}
             >
-              {status === 'sending' ? 'Opening email…' : 'Send message'}
+              {status === 'sending' ? 'Sending…' : 'Send message'}
             </button>
           </form>
           <div className="contact-details">
