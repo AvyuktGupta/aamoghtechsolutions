@@ -1,9 +1,8 @@
 # Aamogh Tech Solutions — Website
 
-A React + Vite frontend with a small Node/Express backend that powers the
-**Contact Us** form. When a visitor submits the form, the backend sends an
-email from `support@aamoghtech.org` to `support@aamoghtech.org` via Gmail SMTP
-in this exact format:
+A React + Vite frontend with a contact API that sends email via Gmail SMTP.
+When a visitor submits the **Contact Us** form, an email is sent from
+`support@aamoghtech.org` to `support@aamoghtech.org` in this exact format:
 
 ```
 Name: {Given name}
@@ -11,61 +10,67 @@ Email: {Given Email}
 Message: {Given message}
 ```
 
+The contact API exists in **two equivalent forms** so the same repo works
+both locally and on Vercel:
+
+- **Production (Vercel):** a serverless function at
+  [`api/contact.js`](./api/contact.js). Vercel auto-mounts files in `/api/`
+  as serverless endpoints, so the frontend can post to `/api/contact` on the
+  same origin — no CORS, no separate host.
+- **Local dev:** a small Express server in
+  [`server/`](./server) that exposes the same `POST /api/contact` endpoint
+  on `http://localhost:3001`. Vite proxies `/api/*` to it during `npm run
+  dev`.
+
 ---
 
 ## Project layout
 
 ```
 aamoghtechsolutions/
+├── api/
+│   └── contact.js        # Vercel serverless function (production)
 ├── src/                  # React app (Vite)
-├── vite.config.js        # Vite config — includes a dev proxy for /api → :3001
-├── .env                  # Frontend env (optional; proxy handles local dev)
-├── server/               # Contact API (Express + Nodemailer)
+├── vite.config.js        # Vite config — dev proxy for /api → :3001
+├── .env.example          # Frontend env template (usually not needed)
+├── server/               # Local Express API (dev only)
 │   ├── src/index.js
 │   ├── package.json
 │   ├── .env              # Backend env (Gmail creds, CORS origin, etc.)
 │   └── .env.example
+├── package.json
 └── README.md
 ```
-
-The frontend calls `POST /api/contact`. In dev, Vite proxies that to the
-backend on `http://localhost:3001` so you don't need to worry about CORS.
 
 ---
 
 ## Prerequisites
 
 - Node.js 18+ and npm
-- A Gmail account with an **App Password** (used by the backend to send mail).
-  See: <https://support.google.com/accounts/answer/185833>
+- A Gmail account with an **App Password** (16 characters, no spaces).
+  See: <https://support.google.com/accounts/answer/185833>. 2-Step
+  Verification must be enabled on that Google account.
 
 ---
 
-## One-time setup
+## Local development
 
-Open a terminal in the project root: `aamoghtechsolutions/`.
+### 1. Install dependencies
 
-### 1. Install frontend dependencies
+From `aamoghtechsolutions/`:
 
 ```powershell
 npm install
-```
-
-### 2. Install backend dependencies
-
-```powershell
 npm --prefix server install
 ```
 
-### 3. Configure the backend `.env`
-
-Copy the example and fill in the Gmail credentials:
+### 2. Configure the local backend
 
 ```powershell
 Copy-Item server\.env.example server\.env
 ```
 
-Then edit `server/.env` so it looks like this:
+Edit `server/.env`:
 
 ```env
 PORT=3001
@@ -79,120 +84,156 @@ GMAIL_APP_PASSWORD=your_16_char_app_password
 CONTACT_TO=support@aamoghtech.org
 ```
 
-Notes:
-- `GMAIL_APP_PASSWORD` must be a 16-character Google App Password with no
-  spaces. A regular Gmail password will not work.
-- `CLIENT_ORIGIN` must match the URL of the running Vite dev server
-  (default `http://localhost:5173`). If Vite reports a different port, either
-  update this value or free up port 5173 and restart Vite.
+> You do **not** need a frontend `.env` for local dev — Vite proxies
+> `/api/*` to the Express server automatically.
 
-### 4. (Optional) Frontend `.env`
+### 3. Run two terminals
 
-For local development you don't need one — the Vite dev proxy forwards
-`/api/*` to the backend. The file `.env.example` is provided for reference:
-
-```env
-# Only needed if you want the frontend to call the backend on a different
-# host (e.g. a deployed API). Leave unset for local dev.
-VITE_CONTACT_API_BASE=http://localhost:3001
-```
-
----
-
-## Running the app (every time)
-
-You need **two** processes running at the same time: the backend and the
-frontend. Open **two** terminals in `aamoghtechsolutions/`.
-
-### Terminal 1 — start the backend (contact API)
+**Terminal 1 — backend (Express):**
 
 ```powershell
 npm --prefix server run dev
+# → Contact API listening on http://localhost:3001
 ```
 
-You should see:
+**Terminal 2 — frontend (Vite):**
 
-```
-Contact API listening on http://localhost:3001
+```powershell
+npm run dev
+# → ➜ Local: http://localhost:5173/
 ```
 
-Quick health check (in any terminal):
+Open <http://localhost:5173/>, submit the Contact form, and check the
+`support@aamoghtech.org` inbox.
+
+### Quick health check
 
 ```powershell
 Invoke-WebRequest http://localhost:3001/health -UseBasicParsing | Select-Object -ExpandProperty Content
 # expected: {"ok":true}
 ```
 
-### Terminal 2 — start the frontend (Vite)
+---
+
+## Deploying to Vercel (production)
+
+The repo is set up so Vercel needs **zero config** — the Vite app is built
+and served statically, and `api/contact.js` runs as a serverless function
+on the same domain.
+
+### 1. Vercel project settings
+
+In the Vercel dashboard, for this project:
+
+- **Root Directory:** `aamoghtechsolutions` (if your repo root contains
+  other folders). If the entire repo *is* this project, leave it as the
+  repo root.
+- **Framework Preset:** Vite (auto-detected).
+- **Build Command:** `npm run build` (default).
+- **Output Directory:** `dist` (default).
+- **Install Command:** `npm install` (default).
+
+You do **not** need to deploy the `server/` folder — it's only used for
+local development.
+
+### 2. Set environment variables on Vercel
+
+Go to **Project → Settings → Environment Variables** and add the following
+for the **Production** environment (and Preview, if you want previews to
+send real email):
+
+| Name                  | Example value                  | Notes                                    |
+| --------------------- | ------------------------------ | ---------------------------------------- |
+| `GMAIL_USER`          | `support@aamoghtech.org`       | Gmail address that owns the App Password |
+| `GMAIL_APP_PASSWORD`  | `abcd efgh ijkl mnop`          | 16-char App Password, spaces optional    |
+| `CONTACT_TO`          | `support@aamoghtech.org`       | Recipient of contact emails              |
+
+> ⚠️ **Never** put these values in `.env` files that are committed to git.
+> Set them only in the Vercel dashboard (and locally in `server/.env`,
+> which is git-ignored — see below).
+
+### 3. Redeploy
+
+After saving the env vars, trigger a new deployment (Vercel → Deployments →
+"Redeploy" on the latest commit, or push a new commit). Env vars are baked
+into the serverless function environment at deploy time.
+
+### 4. Verify in production
+
+On the deployed site, open DevTools → **Network**, submit the Contact form,
+and confirm the request to `/api/contact` returns `200 {"ok":true}`.
+
+You can also hit the function directly from PowerShell:
 
 ```powershell
-npm run dev
+$body = '{"name":"Test","email":"test@example.com","message":"hello from prod"}'
+Invoke-WebRequest -Uri "https://YOUR-DOMAIN.vercel.app/api/contact" `
+  -Method POST -Body $body -ContentType "application/json" -UseBasicParsing |
+  Select-Object -ExpandProperty Content
+# expected: {"ok":true}
 ```
-
-You should see:
-
-```
-VITE vX.Y.Z  ready in ... ms
-➜  Local:   http://localhost:5173/
-```
-
-Open <http://localhost:5173/> in your browser and submit the Contact Us form.
-On success you'll see a confirmation message and `support@aamoghtech.org`
-will receive an email in the format shown at the top of this README.
 
 ---
 
-## Stopping the servers
+## Security: keep secrets out of git
 
-In each terminal press `Ctrl + C`. If a port is still held by a stale process:
+`.env` files contain your Gmail App Password. They are git-ignored in this
+repo (see `.gitignore`):
+
+```
+.env
+.env.*
+!.env.example
+server/.env
+!server/.env.example
+```
+
+If you already committed a real password, **rotate/revoke it immediately**
+in the Google Account → Security → App passwords page and set a fresh one
+on Vercel.
+
+---
+
+## Troubleshooting
+
+### "Something went wrong. You can email us directly at support@aamoghtech.org."
+
+Open DevTools → **Network** and click the `/api/contact` request to see
+what actually happened.
+
+- **404 on Vercel:** `api/contact.js` wasn't deployed. Make sure the file
+  exists at `aamoghtechsolutions/api/contact.js`, the Vercel **Root
+  Directory** setting points at `aamoghtechsolutions/`, and redeploy.
+- **500 `Server email is not configured`:** `GMAIL_USER` /
+  `GMAIL_APP_PASSWORD` are not set on Vercel. Add them in Project →
+  Settings → Environment Variables and redeploy.
+- **500 `Failed to send email` with Gmail auth error in logs:** the App
+  Password is wrong, expired, or 2-Step Verification isn't enabled on the
+  Google account.
+- **Locally, 404 on `/api/contact`:** the Express server isn't running, or
+  Vite was started before `vite.config.js` existed. Restart both terminals.
+- **Locally, CORS errors:** `CLIENT_ORIGIN` in `server/.env` must match the
+  exact URL Vite is serving (default `http://localhost:5173`). If Vite
+  falls back to `5174`, free port 5173 and restart Vite, or update
+  `CLIENT_ORIGIN` and restart the backend.
+
+### Freeing stuck ports locally
 
 ```powershell
-# Find the PID listening on port 5173 (or 3001) and kill it
 Get-NetTCPConnection -LocalPort 5173 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 Get-NetTCPConnection -LocalPort 3001 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 ```
 
 ---
 
-## Troubleshooting
-
-**"Something went wrong. You can email us directly at support@aamoghtech.org."**
-
-Work through these in order:
-
-1. **Is the backend running?**
-   Visit <http://localhost:3001/health>. It must return `{"ok":true}`.
-   If not, start it: `npm --prefix server run dev`.
-
-2. **Is Vite on port 5173?**
-   Check the Vite terminal output. If it fell back to `5174`, either free
-   port 5173 and restart Vite, or update `CLIENT_ORIGIN` in `server/.env` to
-   match and restart the backend.
-
-3. **Did you edit `vite.config.js` or `.env` while Vite was running?**
-   Stop Vite (`Ctrl + C`) and run `npm run dev` again. Vite only reads these
-   files at startup.
-
-4. **Gmail authentication errors in the backend terminal** (e.g.
-   `Invalid login`, `Username and Password not accepted`):
-   - `GMAIL_APP_PASSWORD` must be a 16-character **App Password** (no
-     spaces), not your normal Gmail password.
-   - 2-Step Verification must be enabled on the Google account.
-   - `GMAIL_USER` must match the account that owns the App Password.
-
-5. **CORS errors in the browser console:**
-   Make sure `CLIENT_ORIGIN` in `server/.env` matches the exact URL shown by
-   Vite (including the port), then restart the backend.
-
----
-
-## Production build
+## Production build (static only)
 
 ```powershell
 npm run build       # outputs the static frontend to dist/
-npm run preview     # serves the built frontend locally for a final check
+npm run preview     # serves the built frontend locally
 ```
 
-In production the backend still needs to run somewhere reachable, and the
-frontend needs to know its URL. Set `VITE_CONTACT_API_BASE` in the frontend
-`.env` to the public backend URL **before** running `npm run build`.
+`npm run preview` serves *only* the static frontend — the contact form
+will fail against it unless you're also running the Express server and
+Vite-style proxying, so for a true end-to-end production test, use the
+Vercel Preview deployment instead.

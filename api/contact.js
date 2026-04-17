@@ -1,43 +1,28 @@
-import cors from 'cors';
-import dotenv from 'dotenv';
-import express from 'express';
 import nodemailer from 'nodemailer';
-
-dotenv.config();
-
-const app = express();
-
-app.use(express.json({ limit: '50kb' }));
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      const configured = process.env.CLIENT_ORIGIN;
-      if (configured) return callback(null, origin === configured);
-
-      if (!origin) return callback(null, true);
-
-      const isLocalhost =
-        /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
-      return callback(null, isLocalhost);
-    },
-    methods: ['POST'],
-  })
-);
 
 function isNonEmptyString(v) {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
-app.get('/health', (req, res) => {
-  res.json({ ok: true });
-});
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ ok: false, error: 'Method not allowed' });
+  }
 
-app.post('/api/contact', async (req, res) => {
   try {
-    const { name, email, message } = req.body || {};
+    const body =
+      typeof req.body === 'string' && req.body.length > 0
+        ? JSON.parse(req.body)
+        : req.body || {};
 
-    if (!isNonEmptyString(name) || !isNonEmptyString(email) || !isNonEmptyString(message)) {
+    const { name, email, message } = body;
+
+    if (
+      !isNonEmptyString(name) ||
+      !isNonEmptyString(email) ||
+      !isNonEmptyString(message)
+    ) {
       return res.status(400).json({ ok: false, error: 'Missing fields' });
     }
 
@@ -46,7 +31,9 @@ app.post('/api/contact', async (req, res) => {
     const toEmail = process.env.CONTACT_TO || gmailUser;
 
     if (!gmailUser || !gmailAppPassword) {
-      return res.status(500).json({ ok: false, error: 'Server email is not configured' });
+      return res
+        .status(500)
+        .json({ ok: false, error: 'Server email is not configured' });
     }
 
     const transporter = nodemailer.createTransport({
@@ -71,20 +58,17 @@ app.post('/api/contact', async (req, res) => {
       text: `Name: ${cleanName}\nEmail: ${cleanEmail}\nMessage: ${cleanMessage}`,
     });
 
-    return res.json({ ok: true });
+    return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('Contact email failed:', err);
-    const details = process.env.NODE_ENV === 'production' ? undefined : String(err?.message || err);
+    const details =
+      process.env.NODE_ENV === 'production'
+        ? undefined
+        : String(err?.message || err);
     return res.status(500).json({
       ok: false,
       error: 'Failed to send email',
       ...(details ? { details } : {}),
     });
   }
-});
-
-const port = Number(process.env.PORT || 3001);
-app.listen(port, () => {
-  console.log(`Contact API listening on http://localhost:${port}`);
-});
-
+}

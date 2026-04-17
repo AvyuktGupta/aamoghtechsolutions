@@ -350,7 +350,7 @@ const ContactSection = () => {
       setMessage('');
       setErrors({});
       setStatus('success');
-    } catch (err) {
+    } catch {
       setStatus('error');
     }
   };
