@@ -71,10 +71,10 @@ const services = [
     icon: 'fa-briefcase',
     iconClass: 'icon-gold',
     items: [
-      'IT project Internship with durations 2m, 4m, 6m, and 1y',
-      'Testing Internship with durations 2m, 4m, 6m, and 1y',
-      'Agentic AI Internship with durations 2m, 4m, 6m, and 1y',
-      'Generic AI Internship with durations 2m, 4m, 6m, and 1y',
+      'IT project Internship',
+      'Testing Internship',
+      'Agentic AI Internship',
+      'Generic AI Internship',
     ],
   },
   {
@@ -84,7 +84,7 @@ const services = [
     iconClass: 'icon-green',
     items: [
       'Programming Languages',
-      'Soft skill (ex: presentation, speaking)',
+      'Soft skill',
       'AI Prompt',
       'Local AI',
     ],
