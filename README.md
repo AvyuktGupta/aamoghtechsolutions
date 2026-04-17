@@ -32,11 +32,11 @@ aamoghtechsolutions/
 │   └── contact.js        # Vercel serverless function (production)
 ├── src/                  # React app (Vite)
 ├── vite.config.js        # Vite config — dev proxy for /api → :3001
+├── .env                  # Local env for dev (Gmail creds, etc.) — git-ignored
+├── .env.example          # Template for .env
 ├── server/               # Local Express API (dev only)
 │   ├── src/index.js
-│   ├── package.json
-│   ├── .env              # Backend env (Gmail creds, CORS origin, etc.)
-│   └── .env.example
+│   └── package.json
 ├── package.json
 └── README.md
 ```
@@ -65,11 +65,13 @@ npm --prefix server install
 
 ### 2. Configure the local backend
 
+Create a `.env` at the project root (same folder as `package.json`):
+
 ```powershell
-Copy-Item server\.env.example server\.env
+Copy-Item .env.example .env
 ```
 
-Edit `server/.env`:
+Edit `.env`:
 
 ```env
 PORT=3001
@@ -83,8 +85,9 @@ GMAIL_APP_PASSWORD=your_16_char_app_password
 CONTACT_TO=support@aamoghtech.org
 ```
 
-> You do **not** need a frontend `.env` for local dev — Vite proxies
-> `/api/*` to the Express server automatically.
+> The root `.env` is read only by the local Express server (via `server/src/index.js`).
+> The Vite frontend ignores it (it has no `VITE_*` vars).
+> On Vercel these values come from the dashboard's Environment Variables, not this file.
 
 ### 3. Run two terminals
 
@@ -148,7 +151,7 @@ send real email):
 | `CONTACT_TO`          | `support@aamoghtech.org`       | Recipient of contact emails              |
 
 > ⚠️ **Never** put these values in `.env` files that are committed to git.
-> Set them only in the Vercel dashboard (and locally in `server/.env`,
+> Set them only in the Vercel dashboard (and locally in the root `.env`,
 > which is git-ignored — see below).
 
 ### 3. Redeploy
@@ -183,8 +186,6 @@ repo (see `.gitignore`):
 .env
 .env.*
 !.env.example
-server/.env
-!server/.env.example
 ```
 
 If you already committed a real password, **rotate/revoke it immediately**
@@ -211,7 +212,7 @@ what actually happened.
   Google account.
 - **Locally, 404 on `/api/contact`:** the Express server isn't running, or
   Vite was started before `vite.config.js` existed. Restart both terminals.
-- **Locally, CORS errors:** `CLIENT_ORIGIN` in `server/.env` must match the
+- **Locally, CORS errors:** `CLIENT_ORIGIN` in the root `.env` must match the
   exact URL Vite is serving (default `http://localhost:5173`). If Vite
   falls back to `5174`, free port 5173 and restart Vite, or update
   `CLIENT_ORIGIN` and restart the backend.
